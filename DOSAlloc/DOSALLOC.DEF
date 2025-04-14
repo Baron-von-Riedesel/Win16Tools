@@ -1,0 +1,40 @@
+
+NAME
+
+EXETYPE WINDOWS
+
+DESCRIPTION 'DOS/DPMI memory alloc test'
+
+CODE discardable
+
+HEAPSIZE  1024
+STACKSIZE 5120
+
+IMPORTS
+ ALLOCSELECTOR        = Kernel.175
+ FREESELECTOR         = Kernel.176
+ INITTASK             = Kernel.91
+ LOCALALLOC           = Kernel.5
+ LOCALFREE            = Kernel.7
+ WAITEVENT            = Kernel.30
+
+ CREATEWINDOW         = User.41
+ DEFWINDOWPROC        = User.107
+ DISPATCHMESSAGE      = User.114
+ GETCLIENTRECT        = User.33
+ GETMESSAGE           = User.108
+ INITAPP              = User.5
+ LOADACCELERATORS     = User.177
+ LOADCURSOR           = User.173
+ LOADICON             = User.174
+ LOADMENU             = User.150
+ POSTMESSAGE          = User.110
+ POSTQUITMESSAGE      = User.6
+ REGISTERCLASS        = User.57
+ SENDMESSAGE          = User.111
+ SETWINDOWPOS         = User.232
+ SHOWWINDOW           = User.42
+ TRANSLATEACCELERATOR = User.178
+ TRANSLATEMESSAGE     = User.113
+ _wsprintf            = User.420
+

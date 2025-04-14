@@ -1,0 +1,23 @@
+
+NAME ShareA
+
+DESCRIPTION 'App to load/unload Share.dll'
+
+EXETYPE WINDOWS
+
+PROTMODE
+
+CODE    MOVEABLE
+
+IMPORTS
+ WaitEvent            = Kernel.30
+ GetModuleHandle      = Kernel.47
+ InitTask             = Kernel.91
+ LoadLibrary          = Kernel.95
+ FreeLibrary          = Kernel.96
+ AllocCStoDSAlias     = Kernel.170
+ FreeSelector         = Kernel.176
+ GetSetKernelDosProc  = Kernel.311
+ MessageBox           = User.1
+ InitApp              = User.5
+

@@ -1,0 +1,206 @@
+//Microsoft App Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+#include "userw.h"
+#include "notifyx.h"
+
+/////////////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+IDI_ICON1               ICON    DISCARDABLE     "NOTIFY1.ICO"
+IDI_ICON2               ICON    DISCARDABLE     "NOTIFY2.ICO"
+IDI_ICON3               ICON    DISCARDABLE     "NOTIFY3.ICO"
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_MENU1 MENU DISCARDABLE
+BEGIN
+    POPUP "&Datei"
+    BEGIN
+        MENUITEM "C&lear",              ID_CLEAR
+        MENUITEM "&Speichern unter...", ID_SAVEAS
+        MENUITEM "&Optionen...",        ID_OPTION
+        MENUITEM "&Beenden\tAlt+F4",    ID_EXIT
+    END
+    POPUP "&?"
+    BEGIN
+        MENUITEM "&Inhalt",             ID_HELP
+        MENUITEM SEPARATOR
+        MENUITEM "Inf&o...",            ID_ABOUT
+    END
+END
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  22, 17, 150, 64
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "About"
+FONT 8, "Helv"
+BEGIN
+    ICON            IDI_ICON1,-1,10,10,0,0
+    CTEXT           "Notify Monitor",-1,36,6,80,8
+    CTEXT           "Version 1.1",-1,36,18,80,8
+    CTEXT           "###",ID_CPYRT,36,30,80,8
+    DEFPUSHBUTTON   "Ok",IDOK,50,46,50,14,WS_GROUP
+END
+
+IDD_OPTIONBOX DIALOG DISCARDABLE  22, 17, 164, 240
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Optionen"
+FONT 8, "Helv"
+BEGIN
+    GROUPBOX        "",-1,4,4,156,164
+
+    LTEXT           "Nachricht",    -1,10, 12,50,9
+    LTEXT           "",-1,10,21,140,1,SS_BLACKFRAME
+
+    LTEXT           "Unknown",      -1,10, 24,50,10
+    LTEXT           "LoadSeg",      -1,10, 34,50,10
+    LTEXT           "FreeSeg",      -1,10, 44,50,10
+    LTEXT           "StartDll",     -1,10, 54,50,10
+    LTEXT           "StartTask",    -1,10, 64,50,10
+    LTEXT           "ExitTask",     -1,10, 74,50,10
+    LTEXT           "DelModule",    -1,10, 84,50,10
+    LTEXT           "RIP",          -1,10, 94,50,10
+    LTEXT           "TaskIn",       -1,10,104,50,10
+    LTEXT           "TaskOut",      -1,10,114,50,10
+    LTEXT           "InChar",       -1,10,124,50,10
+    LTEXT           "OutStr",       -1,10,134,50,10
+    LTEXT           "LogError",     -1,10,144,50,10
+    LTEXT           "LogParamError",-1,10,154,50,10
+
+    LTEXT           "Protokoll",    -1,60, 12,40,9
+    CONTROL         "",ID_UNKNOWN+0, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 24,10,10
+    CONTROL         "",ID_UNKNOWN+1, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 34,10,10
+    CONTROL         "",ID_UNKNOWN+2, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 44,10,10
+    CONTROL         "",ID_UNKNOWN+3, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 54,10,10
+    CONTROL         "",ID_UNKNOWN+4, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 64,10,10
+    CONTROL         "",ID_UNKNOWN+5, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 74,10,10
+    CONTROL         "",ID_UNKNOWN+6, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 84,10,10
+    CONTROL         "",ID_UNKNOWN+7, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64, 94,10,10
+    CONTROL         "",ID_UNKNOWN+8, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,104,10,10
+    CONTROL         "",ID_UNKNOWN+9, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,114,10,10
+    CONTROL         "",ID_UNKNOWN+10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,124,10,10
+    CONTROL         "",ID_UNKNOWN+11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,134,10,10
+    CONTROL         "",ID_UNKNOWN+12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,144,10,10
+    CONTROL         "",ID_UNKNOWN+13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,154,10,10
+
+    LTEXT           "Break",        -1,96,12,30,9
+    CONTROL         "",ID_UNKNOWN+20,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 24,10,10
+    CONTROL         "",ID_UNKNOWN+21,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 34,10,10
+    CONTROL         "",ID_UNKNOWN+22,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 44,10,10
+    CONTROL         "",ID_UNKNOWN+23,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 54,10,10
+    CONTROL         "",ID_UNKNOWN+24,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 64,10,10
+    CONTROL         "",ID_UNKNOWN+25,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 74,10,10
+    CONTROL         "",ID_UNKNOWN+26,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 84,10,10
+    CONTROL         "",ID_UNKNOWN+27,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100, 94,10,10
+    CONTROL         "",ID_UNKNOWN+28,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,104,10,10
+    CONTROL         "",ID_UNKNOWN+29,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,114,10,10
+    CONTROL         "",ID_UNKNOWN+30,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,124,10,10
+    CONTROL         "",ID_UNKNOWN+31,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,134,10,10
+    CONTROL         "",ID_UNKNOWN+32,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,144,10,10
+    CONTROL         "",ID_UNKNOWN+33,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,154,10,10
+
+    LTEXT           "StkTrc",      -1, 130, 12,24,9
+    CONTROL         "",ID_UNKNOWN+43,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134, 54,10,10
+    CONTROL         "",ID_UNKNOWN+44,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134, 64,10,10
+    CONTROL         "",ID_UNKNOWN+45,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134, 74,10,10
+    CONTROL         "",ID_UNKNOWN+46,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134, 84,10,10
+    CONTROL         "",ID_UNKNOWN+47,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134, 94,10,10
+    CONTROL         "",ID_UNKNOWN+52,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,144,10,10
+    CONTROL         "",ID_UNKNOWN+53,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,154,10,10
+
+    CONTROL         "Beim Beenden abspeichern", ID_SAVEOPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,172,100,10
+    CONTROL         "Ausgabe auf Debugterminal",ID_DBGOPT, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,182,100,10
+    CONTROL         "inkl. InterruptRegister()",ID_INTREG, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,192,100,10
+    EDITTEXT        ID_INTERVAL,10,204,24,12
+    LTEXT           "Fensterrefresh in ms",-1,38,206,80,8
+    PUSHBUTTON      "Ok",IDOK,10,220,50,14,WS_GROUP
+    PUSHBUTTON      "Abbrechen",IDCANCEL,65,220,50,14,WS_GROUP
+END
+
+#ifdef APSTUDIO_INVOKED
+//////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""userw.h""\r\n"
+    "#include ""notifyx.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+/////////////////////////////////////////////////////////////////////////////////////
+#endif    // APSTUDIO_INVOKED
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_APPNAME             "Notify"
+    IDS_TITLE               "Notify Monitor"
+    IDS_ERRNOCLEX           "Monitor kann nicht korrekt beendet werden"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_ININAME             "notify.ini"
+    IDS_WINCAP              "Funktion\tData\tTask\t\t\t\t"
+    IDS_ERRCLASS            "Window Klasse kann nicht registriert werden"
+    IDS_ERRMEM              "Nicht gen\374gend Speicher verf\374gbar"
+    IDS_ERRREG              "Benachrichtigungsroutine kann nicht registriert werden"
+END
+
+
+#ifndef APSTUDIO_INVOKED
+////////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

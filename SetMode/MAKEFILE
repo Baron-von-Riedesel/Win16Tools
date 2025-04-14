@@ -1,0 +1,17 @@
+
+name = setenh
+
+MSVC=c:\msvc
+aopt = -c -Cp -Sg -Fl$* -Fo$*
+lopts=/NOE/NON/A:16/MAP:FULL
+
+$(name).exe: $*.obj $*.def
+	@$(MSVC)\bin\link $* $(lopts),,,userw.lib,$*
+
+$(name).obj: $*.asm Makefile
+	@jwasm $*.asm
+
+clean:
+	@del $(name).exe
+	@del $(name).obj
+	@del $(name).map

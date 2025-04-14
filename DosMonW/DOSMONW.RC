@@ -1,0 +1,146 @@
+
+/////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "windows.h"
+#include "userw.h"
+#include "dosmonx.h"
+#include "xlistbox.h"
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+IDI_ICON1               ICON    DISCARDABLE     "DOSMONW.ICO"
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDA_ACCEL1 ACCELERATORS MOVEABLE PURE
+BEGIN
+    "^A",           IDM_ABOUT,              ASCII
+    "^C",           IDM_TYPECHANGE,         ASCII
+    "^L",           IDM_CLEAR,              ASCII
+    "^O",           IDM_OPTION,             ASCII
+    "^P",           IDM_SAVE,               ASCII
+    "^S",           IDM_STARTSTOP,          ASCII
+    "^X",           IDM_EXIT,               ASCII
+    VK_F1,          IDM_HELP,               VIRTKEY
+END
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU DISCARDABLE
+BEGIN
+    POPUP "&Datei"
+    BEGIN
+        MENUITEM "&Stop Dosmon\tStrg+S",        IDM_STARTSTOP
+        MENUITEM "C&lear\tStrg+L",              IDM_CLEAR
+        MENUITEM "S&peichern\tStrg+P",          IDM_SAVE
+        MENUITEM "&Optionen...\tStrg+O",        IDM_OPTION
+        MENUITEM SEPARATOR
+        MENUITEM "&Beenden\tStrg+X",            IDM_EXIT
+    END
+    POPUP "&?"
+    BEGIN
+        MENUITEM "&Hilfethemen\tF1",            IDM_HELP
+        MENUITEM SEPARATOR
+        MENUITEM "&Info...",                    IDM_ABOUT
+    END
+END
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  22, 17, 150, 64
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Über DosMon"
+FONT 8, "Helv"
+BEGIN
+    CTEXT           "DOS-Interrupt Monitor",-1,0,6,150,8
+    CTEXT           "Version 1.20",-1,0,18,150,8
+    CTEXT           "###",IDC_CPYRT,0,30,150,8
+    ICON            IDI_ICON1,-1,10,10,0,0
+    DEFPUSHBUTTON   "Ok",IDOK,50,46,50,14,WS_GROUP
+END
+
+IDD_OPTIONBOX DIALOG DISCARDABLE  22, 17, 126, 147
+STYLE WS_POPUP | WS_CAPTION
+CAPTION "Optionen"
+FONT 8, "Helv"
+BEGIN
+    GROUPBOX        "INT 0x21 \374berwachen im",-1,4,4,111,61
+    RADIOBUTTON     "Protected Mode",IDC_TYPEP,10,20,100,10, WS_GROUP
+    RADIOBUTTON     "Protected Mode (NoHook)",IDC_TYPENH,10,35,90,10
+    RADIOBUTTON     "Real Mode",IDC_TYPER,10,50,100,10
+    LTEXT           "Timerintervall:",-1,10,70,52,8
+    EDITTEXT        IDC_INTERVAL,65,70,30,12
+    CONTROL         "Nur fehlerhafte Calls",IDC_CARRY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,10,85,110,10
+    CONTROL         "Beim Beenden abspeichern",IDC_SAVEOPT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,100,110,10
+    PUSHBUTTON      "Ok",IDOK,10,120,45,14,WS_GROUP
+    PUSHBUTTON      "Abbrechen",IDCANCEL,65,120,45,14,WS_GROUP
+END
+
+IDD_REGBOX DIALOG DISCARDABLE  20, 20, 90, 128
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Register"
+FONT 8, "Helv"
+BEGIN
+    CONTROL         "",IDC_LISTREG,"xlistbox",WS_DLGFRAME | WS_VSCROLL |
+                    WS_TABSTOP | 0x3000,4,2,82,110
+    DEFPUSHBUTTON   "&Beenden",IDOK,10,114,50,12
+END
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_APPNAME             "DosMonW"
+    IDS_TITLE               "DOS-Interrupt Monitor"
+    IDS_DATE                " Okt. 1998"
+    IDS_START               "&Start DosMonW\tStrg+S"
+    IDS_STOP                "&Stop DosMonW\tStrg+S"
+    IDS_ERRSTART            "Aktivierung nicht m\366glich"
+    IDS_ERRSTOP             "Deaktivierung nicht m\366glich"
+    IDS_ERRNODOS            "Kein DOS-Aufruf"
+    IDS_ERRNOCLEX           "Monitor kann nicht korrekt beendet werden"
+    IDS_REGUEB              "Register Zeile %u"
+    IDS_ERRPMON             "Es ist bereits ein Monitor\n im Protected Mode registriert"
+    IDS_ERRNHMON            "Es ist bereits ein Monitor\n im Protected Mode (NoHook) registriert"
+    IDS_ERRRMON             "Es ist bereits ein Monitor\n im Real Mode registriert"
+    IDS_RMSWITCH            "Switch to Real Mode\t"
+    IDS_PMSWITCH            "Switch to Protected Mode"
+    IDS_NHSWITCH            "Switch to Protected Mode (NoHook)"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_RMSTR               "Real Mode"
+    IDS_PMSTR               "Protected Mode"
+    IDS_NHSTR               "Protected Mode (NoHook)"
+    IDS_ININAME             "dosmonw.ini"
+    IDS_INACTIV             "inaktiv"
+    IDS_WINCAP              "Nr\tFunktion\tAX\tBX\tCX\tDX\tC\tAX\tBX\tCX\tDX\tDS\tCS:IP\tTask\t"
+    IDS_ERRCLASS            "WindowClass kann nicht registriert werden"
+    IDS_ERRDOSMEM           "Es kann nicht gen\374gend DOS_Speicher allokiert werden"
+END
+

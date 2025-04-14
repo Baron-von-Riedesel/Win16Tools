@@ -1,0 +1,77 @@
+{\rtf1\ansi \deff0\deflang1033{\fonttbl{\f0\froman\fcharset0\fprq2 Tms Rmn{\*\falt Times New Roman};}{\f9\fswiss\fcharset0\fprq2 Helvetica{\*\falt Arial};}{\f22\fmodern\fcharset0\fprq0 Pica;}}{\colortbl;\red0\green0\blue0;
+\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;
+\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{\nowidctlpar \fs20\lang1031 \snext0 Normal;}{\*\cs10 \additive Default Paragraph Font;}{\*\cs15 \additive\fs16\up6 \sbasedon10 footnote reference;}
+{\s16\nowidctlpar \fs20\lang1031 \sbasedon0\snext16 footnote text;}{\s17\nowidctlpar\tqr\tx5040\tqr\tx9216 \f22\lang1031 \snext17 ZD;}{\s18\fi-1134\li567\nowidctlpar\tx567\tx1134\tx2835 \f9\fs18\lang1031 \snext18 W1;}{
+\s19\fi-1134\li567\nowidctlpar\tx567\tx1134\tx1418\tx2835\tx6804 \f9\fs18\lang1031 \sbasedon18\snext19 W2;}}{\info{\title Helpfile zu DosMonW}{\author GrA}{\operator Andreas Grech}{\creatim\yr1992\mo9\dy26\hr18\min35}{\revtim\yr1998\mo11\dy1\hr10\min23}
+{\version2}{\edmins0}{\nofpages2}{\nofwords578}{\nofchars3296}{\*\company  }{\vern57431}}\paperw11907\paperh16840\margl1134\margr1134\margt1418\margb1134 \facingp\deftab709\widowctrl\ftnbj\aenddoc\ftnrestart\hyphhotz425\hyphcaps0 \fet0\sectd 
+\linex576\headery709\footery1733\colsx709\endnhere {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl3\pndec\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl4
+\pnlcltr\pnstart1\pnindent720\pnhang{\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang{\pntxtb (}
+{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}\pard\plain \s18\qj\fi-1134\li567\widctlpar\tx567\tx1134\tx2835 \f9\fs18\lang1031 
+\par 
+\par \tab \tab {\fs22 \tab DOS-Monitor }{\b\fs22 DosMonW}
+\par 
+\par {\fs20 \tab }{\fs20\ul Funktionsweise
+\par }
+\par \tab Der Monitor \'fcberwacht die Aufrufe des Interrupts 0x21 und speichert die Inhalte der Register vor und nach dem Aufruf in einer Tabelle. Diese Tabelle bietet bis zu 1000 Eintr\'e4gen Platz. Bei \'dcberschreitung der maximal m\'f6glichen Eintr\'e4
+ge werden die \'e4ltesten Eintr\'e4ge durch die neuen \'fcberschrieben (Ringpuffer).
+\par 
+\par \tab Die Ausgabe der gespeicherten Werte geschieht in Listenform. Neuere Eintr\'e4ge werden dabei {\b oben} an die Liste angef\'fcgt. Jede Zeile des Protokolls beschreibt 1 DOS-Aufruf \'fc
+ber INT 0x21. Es werden die wichtigsten Register vor (=links) und nach (=rechts) dem DOS-Aufruf angezeigt (Ausnahmen siehe weiter unten). Mit den normalen Scrollbefehlen kann in der Liste gebl\'e4ttert werden. Durch Doppelklick auf eine Protokollzeile k
+\'f6nnen alle Register des entsprechenden DOS-Aufrufs angeschaut werden.
+\par 
+\par \tab Wird ganz an den Anfang der Liste (nach oben) positioniert, geht das Programm in einen "selbstauffrischenden" Modus \'fcber. Neue Eintr\'e4ge (=neue DOS-Aufrufe) werden automatisch ausgegeben, zuvor die bisherigen Eintr\'e4
+ge nach unten gescrollt. In der Voreinstellung geschieht diese Auffrischung alle 2 Sekunden.
+\par 
+\par {\fs20 \tab }{\fs20\ul Ausnahmen in der Aufbereitung}{\fs20 :
+\par }
+\par \tab {\b Funktionen 0x39 bis 0x3D, 0x41 und 0x5B }. Statt des Registerinhalts DX nach dem Call wird, je nach Funktion, das Verzeichnis bzw. der Filename ausgegeben (ohne Pfad).
+\par 
+\par \pard\plain \s19\fi-1134\li567\widctlpar\tx567\tx1134\tx1418\tx2835\tx6804 \f9\fs18\lang1031 \tab {\b Funktion 0x4B ("Exec Program").} Diese Funktion wurde in 2 Zeilen gesplittet.  Vor dem Call wird eine Protokollzeile 
+ausgegeben, in der nur die linken Registerwerte aussagekr\'e4
+ftig sind. Das Protokoll nach dem Call zeigt in der rechten Registern  die Ergebnisse des Calls an, die linken Register sind mit den Registern des Protokolls vor dem Call identisch. Die Funktionsbezeichnung wurde hier auf "ReturnPrg" ge\'e4
+ndert. Im Unterschied zu DOS wartet unter Windows die Funktion "Exec Program" nicht, bis das aufgerufene Programm beendet ist. Zu erw\'e4hnen w\'e4re noch, da\'df die in den Protokollzeilen ausgegebene Tasknummer nicht sofort 
+nach der Funktion 0x4B wechseln mu\'df.
+\par 
+\par \pard\plain \s18\qj\fi-1134\li567\widctlpar\tx567\tx1134\tx2835 \f9\fs18\lang1031 \tab {\b Funktion 0x4C ("Terminate Program")}.  Hier sind nur die Registerwerte vor dem Call, also die links stehenden, g\'fcltig, da es keine R\'fc
+ckkehr von dieser Funktion gibt.
+\par 
+\par \tab {\fs20\ul Men\'fcfunktionen}
+\par 
+\par \tab 1. Stop/Start DosMonW:\tab startet bzw. beendet die Protokollierung
+\par \tab 2. Clear    \tab l\'f6scht die bisher protokollierten Aufrufe
+\par \tab 3. Speichern\tab speichert das bisherige Protokoll in einer Datei im TEMP-Verzeichnis
+\par \tab 4. Optionen\tab ruft den Dialog zur Einstellung der Optionen auf (s.w.u.)
+\par \tab 5. Beenden\tab beendet DosMonW
+\par \tab 
+\par 
+\par \tab {\fs20\ul Optionen}
+\par 
+\par \tab 1. Real Mode/Protected Mode
+\par 
+\par \tab Der Monitor kann unter Windows 3.X und Windows 95 sowohl die DOS-Aufrufe im Protected-Mode als auch im Real-Mode protokollieren. F\'fcr ein Protokoll im Real-Mode mu\'df allerdings das Code-Segment der zugeh\'f6rigen DLL \ldblquote DOSMON.DLL
+\rdblquote  im konventionellen Speicher geladen sein. Das sollte eigentlich durch die Segmentattribute \ldblquote PRELOAD FIXED\rdblquote  gew\'e4hrleistet werden, ist aber nicht immer so. Falls nicht, verweigert der Monitor den Real-Mode-Modus. Dar\'fc
+ber hinaus sind im Real Mode die Register CS:IP wenig aussagekr\'e4ftig, da sie normalerweise immer auf diesselbe Adresse - zum R\'fccksprung in den Protected Mode - zeigen.
+\par 
+\par \tab 2. Nur fehlerhafte Calls
+\par 
+\par \tab Falls aktiviert, werden nur die nicht erfolgreichen DOS-Aufrufe, intern erkennbar am gesetzten Carry-Flag, protokolliert.
+\par 
+\par \tab 3. Timerintervall
+\par 
+\par \tab Zeitintervall in ms f\'fcr Bildschirmrefresh, Voreinstellung 2000, entspricht 2 Sekunden.
+\par 
+\par \tab 
+\par 
+\par \pard \s18\fi-1134\li567\widctlpar\tx567\tx1134\tx2835 \tab {\fs20\ul Parameter}{\fs20 
+\par }
+\par \tab In DOSMONW.INI kann durch geeignete Parameterangabe die Protokollierung selektiv eingestellt werden. Dazu existieren die 16 Parameter \ldblquote FN000F\rdblquote , \ldblquote FN101F\rdblquote , ..., \ldblquote FNF0FF\rdblquote 
+. Jeder Parameter kann einen Wert zwischen 0 und 65635 annehmen und steuert mit seinen 16 Bits jeweils die Protokollierung von 16 DOS-Funktionen. Fehlt ein Parameter, wird die Voreinstellung von 65535 verwendet.
+\par \tab Beispiel:
+\par \tab FN000F=0xFFEB\tab DOS-Funktionen 00 bis 0Fh werden bis auf Funktion 02 und 04 protokolliert.
+\par \pard\plain \widctlpar \fs20\lang1031 
+\par \pard\plain \s18\fi-1134\li567\widctlpar\tx567\tx1134\tx2835 \f9\fs18\lang1031 \tab {\ul Hinweis:} Diese Parameter k\'f6nnen nur manuell in DOSMONW.INI ver\'e4ndert werden.
+\par \pard\plain \widctlpar \fs20\lang1031 
+\par \tab 
+\par 
+\par 
+\par }

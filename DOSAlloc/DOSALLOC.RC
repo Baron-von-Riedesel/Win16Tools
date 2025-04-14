@@ -1,0 +1,31 @@
+
+#include "dosalloc.inc"
+
+#define VK_F5           0x74
+#define VK_F6           0x75
+#define VK_F7           0x76
+#define VK_F8           0x77
+
+IDI_ICON1 ICON DISCARDABLE  "dosalloc.ico"
+
+IDR_MENU1 MENU DISCARDABLE
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "alloc 1 MB memory block (DOS)\tF5",   IDM_ALLOC1
+        MENUITEM "alloc 1 MB memory block (DPMI)\tF6",   IDM_ALLOC2
+        MENUITEM "alloc 16 MB memory block (DPMI)\tF7",   IDM_ALLOC3
+        MENUITEM "alloc 256 MB memory block (DPMI)\tF8",   IDM_ALLOC4
+        MENUITEM "release all DPMI blocks",   IDM_DEALLOC
+        MENUITEM "DPMI status",   IDM_STATUS
+        MENUITEM "E&xit",   IDM_EXIT
+    END
+END
+
+IDA_ACCEL1 ACCELERATORS
+BEGIN
+    VK_F5,IDM_ALLOC1,VIRTKEY
+    VK_F6,IDM_ALLOC2,VIRTKEY
+    VK_F7,IDM_ALLOC3,VIRTKEY
+    VK_F8,IDM_ALLOC4,VIRTKEY
+END

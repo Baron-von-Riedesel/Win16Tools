@@ -1,0 +1,25 @@
+
+NAME
+
+EXETYPE WINDOWS
+
+CODE    MOVEABLE
+DATA    MOVEABLE
+
+STACKSIZE 4096
+
+IMPORTS
+ WaitEvent            = Kernel.30
+ GetModuleHandle      = Kernel.47
+ InitTask             = Kernel.91
+; LoadLibrary          = Kernel.95
+; FreeLibrary          = Kernel.96
+; AllocCStoDSAlias     = Kernel.170
+; FreeSelector         = Kernel.176
+; GetSetKernelDosProc  = Kernel.311
+ GetWinFlags          = Kernel.132
+; OutputDebugString    = Kernel.115
+ MessageBox           = User.1
+ InitApp              = User.5
+; _wsprintf            = User.420
+
