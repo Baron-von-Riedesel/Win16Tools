@@ -1,0 +1,16 @@
+
+NAME
+
+EXETYPE WINDOWS
+
+DESCRIPTION 'GDI Status'
+
+PROTMODE
+
+CODE discardable
+
+HEAPSIZE  0
+STACKSIZE 5120
+
+IMPORTS
+	GetHeapSpaces = Kernel.138

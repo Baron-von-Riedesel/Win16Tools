@@ -6,56 +6,68 @@
 	.386
 	option casemap:none
 
-?USEHWBREAK equ 1
+;--- ?USEHWBREAK:
+;--- 1: use either exception 01 or toolhelp's interruptregister
+;---    pro: no need to modify protected-mode vectors
+;---    con: may not work for NoHookDosCall, since address has a GDT selector.
+;--- 0: protected-mode vectors are modified (int 21h/GetSetKernelDosProc)
+
+?USEHWBREAK equ 0           ;1=use hardware breakpoint (int 31h, ax=0b00h/0b01h)
+
+if ?USEHWBREAK
 ?USEINTERRUPTREGISTER equ 0 ;1=use ToolHelp InterruptRegister()
+endif
 
 	include winproto.inc
 	include dosbase.inc
 
 	include dosmon.inc
 
-ANZINT = 30h
-
 PMTYPE = 0
 RMTYPE = 1
 NHTYPE = 2
 
+CStr macro text:vararg
+local sym
+	.const
+sym db text,0
+	.code
+	exitm <addr sym>
+endm
 
 	.CODE
 
-pmcallback dd ?             ;not used currently
+;pmcallback dd ?             ;not used currently
 
-oldintp    dd ?             ;PM: addresse der vorherigen routine
-phook      dd ?             ;PM: addresse der aufzurufenden routine
-pmstack    dw ?             ;PM: wert des stack pointers
-dsreg      dw ?             ;PM: Inhalt des DS-Registers
-oldintr    dd ?             ;RM: addresse der vorherigen routine
-rhook      dd ?             ;RM: addresse der tabelle zur abspeicherung der registerinhalte
-rcodesel   dw ?             ;RM: code segment
-sel        dw ?             ;CS alias
-oldbase    dd 0
+oldint21p  dd ?             ;PM: (old) vector, either int 21h pm or kerneldosproc
+phook      dd ?             ;PM: far16 address of function to call
+pmstack    dw ?             ;PM: SP 
+dsreg      dw ?             ;PM: DS (=DGROUP) register
+oldintr    dd ?             ;RM: old rm vector
+rhook      dd ?             ;RM: address of table to store registers
+codeseg    dw ?             ;RM: code segment
+wCSalias   dw ?             ;CS alias
+oldbase    dd 0             ;original address if code was moved to conv memory
 
 if ?USEHWBREAK
 oldexc01   dd ?
 oldpketvek dd ?
 hwhandle   dw 0
-if ?USEINTERRUPTREGISTER
+ if ?USEINTERRUPTREGISTER
 hTask      dw 0
-endif
+ endif
 endif
 
-rflag      db 1             ;registerausgabe ein (bleibt konstant)
+rflag      db 1             ;1=store registers  (constant)
 
         align 2
 
 regstruc   ZREGS <>
-iflag      db ANZINT dup (0)
+iflag      dw PMTYPE,RMTYPE,NHTYPE
 
 UnregisterDosMon proto far pascal intnr:word,atype:word
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** windows main procedure (DLL)   **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** windows main procedure (DLL)
 
 LibEntry proc far pascal uses si di
 
@@ -87,7 +99,7 @@ local   toldbase:dword
         rep     movsb
         pop     ds
 
-        mov     es:[sel],ax
+        mov     es:[wCSalias],ax
         mov     eax,toldbase
         mov     es:[oldbase],eax
 
@@ -99,55 +111,45 @@ local   toldbase:dword
 ind1:
         invoke  AllocCStoDSAlias,cs
         mov     es,ax
-        mov     es:[sel],ax
+        mov     es:[wCSalias],ax
 ind2:
         mov     ax,1
         ret
 LibEntry endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** windows exit procedure (DLL)   **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** windows exit procedure (DLL)
+
 Wep     proc far pascal uses si wCode:word
 
         mov     bx,offset iflag
-        mov     cx,ANZINT
+        mov     cx,3
 @@:
-        cmp     byte ptr cs:[bx],0
-        jz      wep1
-        push    bx
-        push    cx
-
-        sub     bx,offset iflag
-        mov     si,bx
-        invoke  UnregisterDosMon,si,0
-        invoke  UnregisterDosMon,si,1
-        invoke  UnregisterDosMon,si,2
-
-        pop     cx
-        pop     bx
-wep1:
-        inc     bx
+        pusha
+        mov     ax,cs:[bx]
+        .if ah
+            mov ah,0
+            invoke  UnregisterDosMon,21h,ax
+        .endif
+        popa
+        add     bx,2
         loop    @B
 
         mov     eax,cs:[oldbase]
         and     eax,eax
         jz      wep2
-        push    cs:[sel]
+        push    cs:[wCSalias]
         invoke SetSelectorBase, cs, eax
         pop     ax
         invoke  GlobalDosFree,ax
         jmp     wep3
 wep2:
-        invoke  FreeSelector,cs:[sel]
+        invoke  FreeSelector,cs:[wCSalias]
 wep3:
         mov     ax,1
         ret
 Wep     endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** filename abspeichern (RM + PM) **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** filename abspeichern (RM + PM)
 
 getfn   proc near c
 
@@ -194,9 +196,7 @@ getfnex:
         ret
 getfn   endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** register weitergeben (RM)      **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** store registers (real-mode)
 
 rregout proc near c
 
@@ -240,9 +240,7 @@ rsm111:
         ret
 rregout  endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** register weitergeben (PM)      **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** store registers (protected-mode)
 
 pregout proc near c
 
@@ -256,7 +254,7 @@ pregout proc near c
         push    ds
         push    si
 
-        mov     ds,cs:[sel]
+        mov     ds,cs:[wCSalias]
         mov     si,offset regstruc
         @saveall
         mov     word ptr [si.ZREGS.user1],0
@@ -286,9 +284,7 @@ sm111:
         ret
 pregout endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** Interrupt 0x21 Routine RM      **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** Interrupt 0x21 real-mode
 
 rintrou  proc far
         push    ax
@@ -334,9 +330,7 @@ rtermw:                                 ;exec program
 
 rintrou  endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** Interrupt 0x21 Routine RM + PM **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** Interrupt 0x21 protected-mode
 
 pintrou proc far
         push    ax
@@ -354,7 +348,7 @@ pintrou proc far
         jz      termv
         cmp     ah,DOS_exec
         jz      termw
-        call    dword ptr cs:[oldintp]
+        call    dword ptr cs:[oldint21p]
 sm2:
         pushf
         call    pregout
@@ -370,10 +364,10 @@ sm2:
 termv:                                 ;wenn aufruf nicht synchron -> sofort ausgeben
         call    pregout
         add     sp,10
-        jmp     dword ptr cs:[oldintp]
+        jmp     dword ptr cs:[oldint21p]
 termw:                                 ;exec program
         call    pregout
-        call    dword ptr cs:[oldintp]
+        call    dword ptr cs:[oldint21p]
         push    bp
         mov     bp,sp
         mov     byte ptr [bp+9],0ffh   ;ax
@@ -385,25 +379,33 @@ pintrou endp
 if ?USEHWBREAK
  if ?USEINTERRUPTREGISTER
 
+THFR struct
+wOldBp dw ?
+xTHIP  dw ?
+xTHCS  dw ?
+xAX    dw ?
+xIntNr dw ?
+xHdl   dw ?
+union
+xCSIP  dd ?
+struct
+xIP    dw ?
+xCS    dw ?
+ends
+ends
+xFL    dw ?
+THFR ends
+
 intrproc proc far
         push    bp
         mov     bp,sp
 
-xTHIP  equ [bp+2]
-xTHCS  equ [bp+4]
-xAX    equ [bp+6]
-xIntNr equ [bp+8]
-xHdl   equ [bp+10]
-xIP    equ [bp+12]
-xCS    equ [bp+14]
-xFL    equ [bp+16]
-
-        cmp     word ptr xIntNr,1
-        jnz     short @F
+        cmp     [bp].THFR.xIntNr,1
+        jnz     @F
         push    eax
-        mov     eax,[xIP]
+        mov     eax,[bp].THFR.xCSIP
         cmp     eax,cs:[oldpketvek]
-        jz      short intrproc_1
+        jz      intrproc_1
         pop     eax
 @@:
         pop     bp
@@ -411,16 +413,16 @@ xFL    equ [bp+16]
 intrproc_1:
         push    bx
         mov     bx,cs:[hwhandle]
-        mov     ax,0B03h
+        mov     ax,0B03h    ;clear watchpoint state
         int     31h
         pop     bx
 
         mov     ax,cs
         shl     eax,16
         mov     ax,offset pintrou
-        mov     [xIP],eax
+        mov     [bp].THFR.xCSIP,eax
         pop     eax
-        mov     ax,xAX
+        mov     ax,[bp].THFR.xAX
         pop     bp
         add     sp,10
         iret
@@ -428,24 +430,32 @@ intrproc endp
 
  else
 
-;*** EXC 01 routine ***
-;*** wir mÅssen unbedingt filtern ***
+EXC01FR struct   ; exception stack frame
+wOldBp  dw ?
+xDPMIIP dw ?
+xDPMICS dw ?
+xDPMIER dw ?
+union
+xCSIP   dd ?
+struct
+xIP     dw ?
+xCS     dw ?
+ends
+ends
+xFL     dw ?
+EXC01FR ends
+
+;*** EXC 01 handler
+;*** have to check if it's our hw bp
 
 pintr01 proc far
         push    bp
         mov     bp,sp
 
-xDPMIIP equ [bp+2]
-xDPMICS equ [bp+4]
-xDPMIER equ [bp+6]
-xIP     equ [bp+8]
-xCS     equ [bp+10]
-xFL     equ [bp+12]
-
         pushf
         push    eax
-        mov     eax,xIP
-        cmp     eax,cs:[oldpketvek]     ;ist es unsere Stelle?
+        mov     eax,[bp].EXC01FR.xCSIP
+        cmp     eax,cs:[oldpketvek]     ;is it our location?
         jz      @F
         pop     eax
         popf
@@ -454,14 +464,14 @@ xFL     equ [bp+12]
 @@:
         push    bx
         mov     bx,cs:[hwhandle]
-        mov     ax,0B03h
+        mov     ax,0B03h                ;clear debug watchpoint state
         int     31h
-        pop     bx                      ;reset debug watchpoint
+        pop     bx
 
         mov     ax,cs
         shl     eax,16
         mov     ax,offset pintrou
-        mov     [xIP],eax
+        mov     [bp].EXC01FR.xCSIP,eax
         pop     eax
         popf
         pop     bp
@@ -470,7 +480,9 @@ pintr01 endp
 
  endif
 
-newpketvek:
+;--- ensure RF is set in 32-bit eflags register
+
+newproc:
         pushfd
         sub     sp,2*4
         push    bp
@@ -486,59 +498,57 @@ newpketvek:
         iretd
 endif
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** real mode monitor registrieren **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** enable monitor for real-mode;
+;--- hw breakpoints cannot be used here, since they may not work in real-mode
 
-rmreg  proc near pascal intnr:word,hookproc:dword
+rmreg  proc pascal intnr:word,hookproc:dword
 
-local   rmsel:word
-
-                                           ;1.: real mode segmentaddresse -> rmsel
-        push    cs
-        call    GetSelectorBase
+local   rmseg:word
+                                           ;1.: real mode segment address -> rmseg
+        invoke  GetSelectorBase, cs
         mov     cx,ax
         xor     ax,ax                      ;rc=FALSE
-        cmp     dx,000Fh
-        ja      rmreg1                     ;fehler: aktuelle addresse nicht im 1. MB
+        cmp     dx,0010h
+        jae     rmreg1                     ;error: base not in conv. memory space
         test    cx,000Fh
-        jnz     rmreg1                     ;fehler: beginnt nicht an paragraphgrenze
+        jnz     rmreg1                     ;error: base not at start of paragraph
         mov     ax,cx
         shr     ax,4
         shl     dx,12
         or      ax,dx
-        mov     rmsel,ax
-                                           ;2.: real mode interruptvektor holen und sichern
+        mov     rmseg,ax
+                                           ;2.: get real mode interrupt vector
         mov     bl, byte ptr intnr
         mov     ax, 200h
         int     31h
-        mov     es,cs:[sel]                ;ins codesegment schreiben
+
+        mov     es,cs:[wCSalias]           ;use csalias to write into _TEXT
         assume  es:_TEXT
         mov     word ptr es:[oldintr+0],dx
         mov     word ptr es:[oldintr+2],cx
-
-        mov     ax,word ptr hookproc+0     ;3.: die prozeduraddresse wird vorlaeufig
-        mov     word ptr es:[rhook+0],ax   ;    als far pointer auf tabelle interpretiert
+        mov     ax,word ptr hookproc+0     ;3.: hookproc will be interpreted as
+        mov     word ptr es:[rhook+0],ax   ;    far ptr to table 
         mov     ax,word ptr hookproc+2
         mov     word ptr es:[rhook+2],ax
-        mov     ax,rmsel
-        mov     es:[rcodesel],ax
+        mov     ax,rmseg
+        mov     es:[codeseg],ax
 
 ;        push    ds
 ;        push    es
 ;        mov     ax,ds
 ;        mov     es,ax
-;        @movea  di,rmds
-;        mov     si,offset introu1
+;        mov     di,offset rmds            ;ES:DI -> rmcs
+;        mov     si,offset introu1         ;DS:SI -> callback pm address
 ;        mov     ax,cs
 ;        mov     ds,ax
-;        @DPMI_ALLOCRMCALLBACK             ;real mode callback anfordern
+;        mov     ax,303h
+;        int     31h                       ;get real mode callback
 ;        pop     es
 ;        pop     ds
 ;        mov     word ptr es:[pmcallback+0],dx
 ;        mov     word ptr es:[pmcallback+2],cx
-                                           ;5.: real mode vektor setzen
-        mov     cx,rmsel
+                                           ;5.: set real mode vector
+        mov     cx,rmseg
         mov     dx,offset rintrou
         mov     bl,byte ptr intnr
         mov     ax,201h
@@ -549,12 +559,59 @@ rmreg1:
         ret
 rmreg   endp
 
+if ?USEHWBREAK
+getgdtselbase proc uses si
 
-pmreg  proc near pascal intnr:word,hookproc:dword,mystack:word,wtype:word
+local gdt[6]:byte
 
+	mov si,bx
+	xor bx,bx
+	mov cx,1
+	mov ax,0
+	int 31h
+	jc exit
+	mov bx,ax
+	sgdt [gdt]
+	mov dx,word ptr [gdt+2]
+	mov cx,word ptr [gdt+4]
+	mov ax,7
+	int 31h
+	jc exit
+	mov dx,-1
+	mov cx,0
+	mov ax,8
+	int 31h
+	jc exit
+	mov es,bx
+	and si,not 7
+	mov al,es:[si+4]
+	mov ah,es:[si+7]
+	shl eax,16
+	mov ax,es:[si+2]
+	clc
+exit:
+	pushf
+	and bx,bx
+	jz @F
+	push ax
+	mov ax,1
+	int 31h
+	pop ax
+@@:
+	popf
+	ret
+getgdtselbase endp
+endif
 
-        cmp     wtype,0
-        jz      setint25
+;--- enable monitor for protected-mode; wtype: 0=std protected-mode int 21h, 1=nohookdoscall
+
+pmreg  proc pascal intnr:word,hookproc:dword,mystack:word,wtype:word
+
+        cmp     wtype,0       ;std protected-mode int 21h?
+        jz      setpmint
+
+;--- just get the address of the current nohookdosproc - don't modify it!
+
         cli
         invoke  GetSetKernelDosProc,0
         push    dx
@@ -564,16 +621,16 @@ pmreg  proc near pascal intnr:word,hookproc:dword,mystack:word,wtype:word
         pop     dx
         pop     cx
         jmp     next
-setint25:
-        mov     bl, byte ptr intnr
-        mov     ax, 204h	;get pm int vector
+setpmint:
+        mov     bl,byte ptr intnr
+        mov     ax,204h		;get pm int vector
         int     31h
-        jc      rim_er
+        jc      rim_err
 next:
-        mov     es,cs:[sel]               ;ins codesegment schreiben
+        mov     es,cs:[wCSalias]      ;use csalias to write into _TEXT
         assume  es:_TEXT
-        mov     word ptr es:[oldintp+0],dx
-        mov     word ptr es:[oldintp+2],cx
+        mov     word ptr es:[oldint21p+0],dx
+        mov     word ptr es:[oldint21p+2],cx
 
         mov     eax,hookproc
         mov     es:[phook],eax
@@ -583,53 +640,59 @@ next:
         mov     es:[pmstack],ax
 
 if ?USEHWBREAK
-        push    0
         push    dx
-
         mov     bx,cx
-        mov     ax,6	;get base
+        mov     ax,6	;get base (may fail if no LDT selector!!!)
         int     31h
         push    cx
         push    dx
-        pop     eax
-
-        pop     edx
-        add     eax,edx
+        pop     eax     ;base in eax
+        pop     dx
+        jnc     @F
+        test    bx,4
+        jnz     rim_err
+        push    dx
+        call    getgdtselbase  ;get base of bx in eax
+        pop     dx
+        jc      rim_err
+@@:
+        movzx   edx,dx
+        add     eax,edx ;eax=linear address of [oldint21p] vector
 
         push    eax
         pop     cx
         pop     bx
 
-        mov     dx,0001
+        mov     dx,0001    ;hw execute type
         mov     ax,0B00h
         int     31h
-        jc      rim_er
+        jc      rim_err
 
-        mov     es,cs:[sel]
+        mov     es,cs:[wCSalias]
         mov     es:[hwhandle],bx
  if ?USEINTERRUPTREGISTER
-        @GetCurrentTask
+        invoke  GetCurrentTask
         mov     [hTask],ax
         invoke  InterruptRegister,ax,addr intrproc
  else
         mov     bl,1
         mov     ax,202h  ; get exception vector
         int     31h
-        jc      rim_er
+        jc      rim_err
         mov     word ptr es:[oldexc01+0],dx
         mov     word ptr es:[oldexc01+2],cx
         mov     cx,cs
         mov     dx,offset pintr01
         @DPMI_SETEXCVEC 01
-        jc      rim_er
+        jc      rim_err
  endif
-
-        mov     eax,es:[oldintp]
+;--- add a level of indirection to set RF
+        mov     eax,es:[oldint21p]
         mov     es:[oldpketvek],eax
         mov     ax,cs
         shl     eax,16
-        mov     ax,offset newpketvek
-        mov     es:[oldintp],eax
+        mov     ax,offset newproc
+        mov     es:[oldint21p],eax
 else
         cmp     wtype,0
         jz      @F
@@ -638,36 +701,38 @@ else
 @@:
         mov     cx,cs
         mov     dx,offset pintrou
-        mov     bl,intnr
+        mov     bl,byte ptr intnr
         mov     ax,205h    ; set pm int vector
         int     31h
-        jc      rim_er
+        jc      rim_err
 next2:
 endif                                     ;rc=TRUE
         mov     ax,1
         ret
-rim_er:
+rim_err:
+ifdef _DEBUG
+        invoke  OutputDebugString, CStr("pmreg failed",13,10)
+endif
         xor     ax,ax
         ret
 pmreg   endp
 ;
-;*** export: monitor registrieren (intnr darf nur 21 sein)  ***
-;*** atype:  0: protected mode ***
-;***         1: real mode ***
+;*** register monitor - intnr must be 21h
+;*** atype:  0: protected mode
+;***         1: real mode
+;***         2: nohookdoscall
 
 RegisterDosMon proc far pascal uses si di intnr:word,hookproc:dword,atype:word,mystack:word
 
 local   ifadr:word
 
         mov     bx,offset iflag
-        add     bx,intnr
-        mov     cl,byte ptr atype
-        inc     cl
-        or      cl,cs:[bx]
-        cmp     cl,cs:[bx]
-        jz      rim_er                    ;fehler: keine 2. registrierung
+        mov     cx,atype
+        shl     cx,1
+        add     bx,cx
+        cmp     byte ptr cs:[bx+1],0
+        jnz     rdm_err                   ;error: already registered
         mov     ifadr,bx
-
 
         cmp     word ptr atype,PMTYPE     ;protected mode?
         jz      rdm_1
@@ -675,37 +740,34 @@ local   ifadr:word
         jz      rdm_2
                                           ;real mode!
         invoke  rmreg,intnr,hookproc
-        jmp     rim2
+        jmp     rdm_3
 rdm_1:                                    ;protected mode!
         invoke  pmreg,intnr,hookproc,mystack,0
-        jmp     rim2
+        jmp     rdm_3
 rdm_2:
         invoke  pmreg,intnr,hookproc,mystack,1
-rim2:
+rdm_3:
         and     ax,ax
-        jz      rim1
-        mov     es,cs:[sel]
+        jz      rdm_ex
+        mov     es,cs:[wCSalias]
         mov     bx,ifadr
-        mov     cl,byte ptr atype
-        inc     cl
-        or      es:[bx],cl
-        jmp     rim1
-rim_er:
+        mov     byte ptr es:[bx+1],-1
+        jmp     rdm_ex
+rdm_err:
         xor     ax,ax
-rim1:
+rdm_ex:
         ret
 RegisterDosMon endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** real mode monitor entregistrieren **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** disable real-mode monitor
+
 rmunreg proc near pascal intnr:word
 
         mov     bl,byte ptr intnr
         mov     ax,200h          ; get rm int vector
         int     31h
         mov     ax,0
-        cmp     cx,cs:[rcodesel]
+        cmp     cx,cs:[codeseg]
         jnz     rur2
         cmp     dx,offset rintrou
         jnz     rur2
@@ -719,7 +781,10 @@ rur2:
         ret
 rmunreg endp
 
-;*** protected mode monitor entregistrieren ***
+;*** disable protected-mode monitor
+;--- if ?USEHWBREAK == 1, all that's needed is to delete the hw bp
+;--- and restore exception vector 01.
+;--- if ?USEHWBREAK == 0, the vectors must be restored.
 
 pmunreg proc near pascal intnr:word,wtype:word
 
@@ -745,21 +810,25 @@ if ?USEHWBREAK
         @DPMI_SETEXCVEC 01
  endif
 else
-        cmp     wType,0
+        cmp     wtype,0
         jz      @F
-        invoke  GetSetKernelDosProc,cs:[oldintp]
+        invoke  GetSetKernelDosProc,cs:[oldint21p]
         jmp     exit
 @@:
-        @DPMI_GETPMINTVEC intnr
+        mov     bl,byte ptr intnr
+        mov     ax,204h
+        int     31h
         mov     ax,cs
         cmp     ax,cx
         mov     ax,0                  ;kann nicht entregistriert werden
         jnz     ur2
         cmp     dx,offset pintrou
         jnz     ur2
-        mov     dx,word ptr cs:[oldintp+0]
-        mov     cx,word ptr cs:[oldintp+2]
-        @DPMI_SETPMINTVEC intnr
+        mov     dx,word ptr cs:[oldint21p+0]
+        mov     cx,word ptr cs:[oldint21p+2]
+        mov     bl,byte ptr intnr
+        mov     ax,205h
+        int     31h
 endif
 exit:
         mov     ax,1
@@ -767,9 +836,7 @@ ur2:
         ret
 pmunreg endp
 
-;⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
-;≥** export: monitor entregistrieren   **≥
-;¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+;*** export: unload monitor
 
 UnregisterDosMon proc far pascal uses si di ds intnr:word,atype:word
 
@@ -777,12 +844,11 @@ local   ifadr:word
 
         xor     ax,ax
         mov     bx,offset iflag
-        add     bx,intnr
-        mov     cl,byte ptr atype
-        inc     cl
-        or      cl,cs:[bx]
-        cmp     cl,cs:[bx]
-        jnz     ur1                   ;fehler: nicht registriert
+        mov     cx,atype
+        shl     cx,1
+        add     bx,cx
+        cmp     byte ptr cs:[bx+1],0
+        jz      ur1                   ;error: nicht registriert
         mov     ifadr,bx
 
         cmp     word ptr atype,PMTYPE
@@ -802,18 +868,15 @@ ur2:
         and     ax,ax
         jz      ur1
         mov     bx,ifadr
-        mov     es,cs:[sel]
-        mov     cl,byte ptr atype
-        inc     cl
-        xor     es:[bx],cl
+        mov     es,cs:[wCSalias]
+        mov     byte ptr es:[bx+1],0
 ur1:
         ret
 UnregisterDosMon endp
 
 
-;*** folgende Funktionen waren nur vor Windows 95 sinnvoll, jetzt ***
-;*** bringt es nix mehr, wenn in einem fixierten Code Segment einer ***
-;*** Dll allokiert wird (frÅher war es automatisch im low memory) ***
+;*** following functions were intended for Win3x.
+;*** in Win9x, they're useless
 
 AllocDosMemory proc far pascal dwBytes:dword
 

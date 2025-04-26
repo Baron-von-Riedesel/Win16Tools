@@ -1,9 +1,10 @@
 
  DOSAlloc: tool to allocate memory thru DOS or DPMI
  DosMonW:  monitors DOS calls (German)
+ GDIStat:  displays User & GDI heap status
  Notify:   monitors windows kernel events (German)
  SetMode:  switches between standard and (faked) enhanced mode (Win 3.1 only)
- Share:    Win16 version of fakeshare - allows to run 16-bin MS Office apps
+ Share:    Win16 version of fakeshare - allows to run 16-bit MS Office apps
 
  Building the binaries requires MS VC 1.52 and Masm/JWasm.
 

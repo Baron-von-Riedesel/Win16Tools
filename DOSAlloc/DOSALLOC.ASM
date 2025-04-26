@@ -40,7 +40,6 @@ BLKITEM ends
 
 hwndMain dw 0
 hwndEdit dw 0
-hAccel   dw 0
 meminfo MEMINFO <>
 pBlocks  dw 0
 if FILLMEM
@@ -356,7 +355,7 @@ InitInstance  endp
 
 WinMain proc pascal hInstance:HINSTANCE,hPrevInstance:HINSTANCE,lpszCmdline:LPSTR,cmdshow:UINT
 
-local   hAccelTable:WORD
+local   hAccel:WORD
 local   msg:MSGSTRUCT
 
 

@@ -123,7 +123,7 @@ main endp
 start:
 	invoke InitTask
 	invoke WaitEvent,0
-	invoke InitApp,0
+	invoke InitApp,di
 	call main
 	mov ah,4ch
 	int 21h

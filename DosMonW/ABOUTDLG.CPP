@@ -34,8 +34,7 @@ BOOL CALLBACK AboutDlg(HWND hDlg,UINT message,WPARAM wParam,LPARAM lParam )
       case WM_INITDIALOG:
         EnableWindow(hWndMain,0);
         ShowWindow(hDlg,SW_SHOWNORMAL);
-        strcpy(str,"(C) Andreas Grech");
-//        strcat(str,GetCopyRightName());
+        strcpy(str,"written by Andreas Grech");
         strcat(str,pszDatstr);
         SetDlgItemText(hDlg,IDC_CPYRT,str);
         rc = TRUE;

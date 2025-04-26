@@ -71,7 +71,7 @@ CAPTION "Über DosMon"
 FONT 8, "Helv"
 BEGIN
     CTEXT           "DOS-Interrupt Monitor",-1,0,6,150,8
-    CTEXT           "Version 1.20",-1,0,18,150,8
+    CTEXT           "Version 1.30",-1,0,18,150,8
     CTEXT           "###",IDC_CPYRT,0,30,150,8
     ICON            IDI_ICON1,-1,10,10,0,0
     DEFPUSHBUTTON   "Ok",IDOK,50,46,50,14,WS_GROUP
@@ -86,7 +86,7 @@ BEGIN
     RADIOBUTTON     "Protected Mode",IDC_TYPEP,10,20,100,10, WS_GROUP
     RADIOBUTTON     "Protected Mode (NoHook)",IDC_TYPENH,10,35,90,10
     RADIOBUTTON     "Real Mode",IDC_TYPER,10,50,100,10
-    LTEXT           "Timerintervall:",-1,10,70,52,8
+    LTEXT           "Timerintervall:",-1,10,72,52,8
     EDITTEXT        IDC_INTERVAL,65,70,30,12
     CONTROL         "Nur fehlerhafte Calls",IDC_CARRY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,10,85,110,10
@@ -116,7 +116,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_APPNAME             "DosMonW"
     IDS_TITLE               "DOS-Interrupt Monitor"
-    IDS_DATE                " Okt. 1998"
+    IDS_DATE                " 1998-2025"
     IDS_START               "&Start DosMonW\tStrg+S"
     IDS_STOP                "&Stop DosMonW\tStrg+S"
     IDS_ERRSTART            "Aktivierung nicht m\366glich"

@@ -28,7 +28,7 @@ start:
 	and ax,ax
 	jz error
 	invoke WaitEvent,0
-    invoke InitApp,0
+	invoke InitApp,di
 	invoke GetModuleHandle, addr szShare
 	.if ax
 		invoke FreeLibrary, ax

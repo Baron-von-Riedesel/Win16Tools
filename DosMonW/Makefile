@@ -17,10 +17,13 @@ mod5 = ABOUTDLG
 CC   = $(MSVC)\bin\cl -c -A$(MODEL) -GA3s  -Oxzw -W3 -nologo -DSTRICT -Fo$* -I$(MSVC)\include -IInclude
 LINK = $(MSVC)\bin\link
 RC   = $(MSVC)\bin\rc
+HC   = $(MSVC)\bin\hc31
 LIBS = libw toolhelp $(ODIR)\DosMon $(MODEL)libcew xlistbox userw $(MODEL)user user
 LOPTS= /NOD/A:16/NON/NOE/MAP:FULL/FAR/ONERROR:NOEXE
 
 MODULES = $(ODIR)\$(mod1).obj $(ODIR)\$(mod2).obj $(ODIR)\$(mod4).obj $(ODIR)\$(mod5).obj
+
+all: $(ODIR)\$(name).exe $(ODIR)\$(name).hlp
 
 $(ODIR)\$(name).exe: $(MODULES) $(ODIR)\$(name).res $(name).def
 	@$(LINK) @<<
@@ -49,6 +52,11 @@ $(ODIR)\$(mod5).obj: $(mod5).cpp $(name).h
 
 $(ODIR)\$(name).res: $(name).rc $(name).ico $(name).h dosmonx.h
 	@$(RC) -r -fo$*.res -i$(MSVC)\include -iInclude $(name).rc
+
+$(ODIR)\$(name).hlp: $(name).rtf $(name).hpj
+	@cd $(ODIR)
+	@$(HC) ..\$(name).hpj
+	@cd ..
 
 clean:
 	@del $(ODIR)\*.obj

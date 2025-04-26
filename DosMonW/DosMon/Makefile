@@ -5,6 +5,10 @@
 
 name = DosMon
 
+!ifndef DEBUG
+DEBUG=0
+!endif
+
 !ifdef MSLINK
 MSVC = \msvc
 LINK = $(MSVC)\bin\link
@@ -15,6 +19,10 @@ LOPT = /NOLOGO/MAP:FULL/NOE/NON/A:16/ONE:NOE
 LINK = jwlink
 RC=wrc
 IMPLIB= wlib
+!endif
+
+!if $(DEBUG)
+AOPTD=-D_DEBUG
 !endif
 
 ODIR = ..\Build
@@ -40,7 +48,7 @@ $(name).def
 !endif
 
 $(ODIR)\$(name).obj: $(name).asm Makefile
-	@jwasm -nologo -c -Fl$* -Fo$* -Sg $(name).asm
+	@jwasm -nologo -c -Fl$* -Fo$* -Sg $(AOPTD) $(name).asm
 
 clean:
 	@del $(ODIR)\$(name).dll
